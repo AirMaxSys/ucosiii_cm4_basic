@@ -52,7 +52,6 @@ static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 static void DBG_LED_Blink(GPIO_TypeDef *port, uint32_t pin, uint32_t delay_ms);
-void uart_tx_datas(const void *buf, uint32_t length);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -97,8 +96,13 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
-	const static char *str = "hello, stm32 ll lib\r\n";
+	const static char *str = "stm32 ll lib USART test!!!\r\n";
 	const uint16_t str_len = strlen(str) + 1;
+
+
+	// enable USART receive irq
+	LL_USART_EnableIT_RXNE(USART1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -108,7 +112,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	uart_tx_datas(str, str_len);
+	// uart_tx_datas(str, str_len);
 	DBG_LED_Blink(LED_B_GPIO_Port, LED_B_Pin, 500);
   }
   /* USER CODE END 3 */
