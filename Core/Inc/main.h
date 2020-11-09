@@ -97,6 +97,7 @@ void Error_Handler(void);
                                                                  0 bit  for subpriority */
 #endif
 /* USER CODE BEGIN Private defines */
+void uart_tx_datas(const void *buf, uint32_t length);
 
 /* USER CODE END Private defines */
 

@@ -200,10 +200,22 @@ void SysTick_Handler(void)
 /**
   * @brief This function handles USART1 global interrupt.
   */
+static uint8_t usart_com_rx_buf[1024];	
+static uint16_t usart1_rx_cnt;
+static uint8_t rx_usr_set_cnt = 10;
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
+	// USART receive irq
+	if (LL_USART_IsEnabledIT_RXNE(USART1) && LL_USART_IsActiveFlag_RXNE(USART1))
+		usart_com_rx_buf[usart1_rx_cnt++] = LL_USART_ReceiveData8(USART1);
 
+	if (usart1_rx_cnt == rx_usr_set_cnt || usart1_rx_cnt >= 1024) {
+		// call user define USART1 receive data function
+		__nop();
+		uart_tx_datas(usart_com_rx_buf, rx_usr_set_cnt);
+		usart1_rx_cnt = 0;
+	}
   /* USER CODE END USART1_IRQn 0 */
   /* USER CODE BEGIN USART1_IRQn 1 */
   
