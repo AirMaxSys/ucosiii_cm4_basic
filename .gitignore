@@ -3,3 +3,6 @@
 !*.s
 !*.uvprojx
 !*.uvoptx
+
+# python
+/test/python_demo/venv/
