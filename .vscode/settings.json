@@ -1,5 +1,5 @@
 {
     "C_Cpp.intelliSenseEngineFallback": "Enabled",
 	"C_Cpp.errorSquiggles": "Disabled",
-	"python.pythonPath": "test\\python_demo\\venv\\Scripts\\python.exe"
+	"python.pythonPath": "D:\\Python\\Python37\\python.exe"
 }
