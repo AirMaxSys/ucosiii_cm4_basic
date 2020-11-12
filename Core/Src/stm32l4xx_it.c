@@ -52,7 +52,9 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+static uint8_t usart_com_rx_buf[1024];	
+static uint16_t usart1_rx_cnt;
+static uint8_t rx_usr_set_cnt = 10;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -200,9 +202,6 @@ void SysTick_Handler(void)
 /**
   * @brief This function handles USART1 global interrupt.
   */
-static uint8_t usart_com_rx_buf[1024];	
-static uint16_t usart1_rx_cnt;
-static uint8_t rx_usr_set_cnt = 10;
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */

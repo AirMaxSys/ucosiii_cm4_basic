@@ -37,6 +37,7 @@ extern "C" {
 #include "stm32l4xx_ll_utils.h"
 #include "stm32l4xx_ll_pwr.h"
 #include "stm32l4xx_ll_dma.h"
+#include "stm32l4xx_ll_tim.h"
 #include "stm32l4xx_ll_usart.h"
 #include "stm32l4xx_ll_gpio.h"
 
@@ -76,8 +77,6 @@ void Error_Handler(void);
 #define LED_R_GPIO_Port GPIOE
 #define LED_G_Pin LL_GPIO_PIN_8
 #define LED_G_GPIO_Port GPIOE
-#define LED_B_Pin LL_GPIO_PIN_9
-#define LED_B_GPIO_Port GPIOE
 #define KEY2_Pin LL_GPIO_PIN_8
 #define KEY2_GPIO_Port GPIOD
 #define KEY1_Pin LL_GPIO_PIN_9

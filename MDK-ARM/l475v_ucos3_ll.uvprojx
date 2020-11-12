@@ -134,11 +134,11 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4107</DriverSelection>
+            <DriverSelection>4101</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>STLink\ST-LINKIII-KEIL_SWO.dll</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -336,9 +336,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_FULL_LL_DRIVER,HSE_VALUE=8000000,HSE_STARTUP_TIMEOUT=100,LSE_STARTUP_TIMEOUT=5000,LSE_VALUE=32768,MSI_VALUE=4000000,EXTERNALSAI1_CLOCK_VALUE=2097000,EXTERNALSAI2_CLOCK_VALUE=2097000,HSI_VALUE=16000000,LSI_VALUE=32000,VDD_VALUE=3300,PREFETCH_ENABLE=0,INSTRUCTION_CACHE_ENABLE=1,DATA_CACHE_ENABLE=1,STM32L475xx</Define>
+              <Define>USE_FULL_LL_DRIVER,STM32L475xx,HSE_VALUE=8000000,HSE_STARTUP_TIMEOUT=100,LSE_STARTUP_TIMEOUT=5000,LSE_VALUE=32768,MSI_VALUE=4000000,EXTERNALSAI1_CLOCK_VALUE=2097000,EXTERNALSAI2_CLOCK_VALUE=2097000,HSI_VALUE=16000000,LSI_VALUE=32000,VDD_VALUE=3300,PREFETCH_ENABLE=0,INSTRUCTION_CACHE_ENABLE=1,DATA_CACHE_ENABLE=1</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc;../Drivers/CMSIS/Device/ST/STM32L4xx/Include;../Drivers/CMSIS/Include</IncludePath>
+              <IncludePath>../Core/Inc;        ../Drivers/STM32L4xx_HAL_Driver/Inc;        ../Drivers/CMSIS/Device/ST/STM32L4xx/Include;        ../Drivers/CMSIS/Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -402,6 +402,11 @@
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32l4xx_it.c</FilePath>
             </File>
+            <File>
+              <FileName>pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\pwm.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -428,6 +433,16 @@
               <FilePath>../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_pwr.c</FilePath>
             </File>
             <File>
+              <FileName>stm32l4xx_ll_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32l4xx_ll_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_dma.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32l4xx_ll_usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_usart.c</FilePath>
@@ -436,11 +451,6 @@
               <FileName>stm32l4xx_ll_rcc.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_rcc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32l4xx_ll_dma.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_dma.c</FilePath>
             </File>
           </Files>
         </Group>
