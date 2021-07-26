@@ -13,7 +13,7 @@
 ######################################
 # target
 ######################################
-TARGET = l475v_ucos3_ll
+TARGET = ucosiii_cm4
 
 
 ######################################
@@ -46,12 +46,38 @@ Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_tim.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_dma.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_usart.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_rcc.c \
-Core/Src/system_stm32l4xx.c  
+Core/Src/system_stm32l4xx.c  \
+RTOS/uC-OS3/Cfg/Template/os_app_hooks.c	\
+RTOS/uC-OS3/Ports/ARM-Cortex-M/ARMv7-M/GNU/os_cpu_c.c	\
+RTOS/uC-OS3/Source/os_cfg_app.c	\
+RTOS/uC-OS3/Source/os_core.c	\
+RTOS/uC-OS3/Source/os_dbg.c	\
+RTOS/uC-OS3/Source/os_flag.c	\
+RTOS/uC-OS3/Source/os_mem.c	\
+RTOS/uC-OS3/Source/os_msg.c	\
+RTOS/uC-OS3/Source/os_mutex.c	\
+RTOS/uC-OS3/Source/os_prio.c	\
+RTOS/uC-OS3/Source/os_q.c	\
+RTOS/uC-OS3/Source/os_sem.c	\
+RTOS/uC-OS3/Source/os_stat.c	\
+RTOS/uC-OS3/Source/os_task.c	\
+RTOS/uC-OS3/Source/os_tick.c	\
+RTOS/uC-OS3/Source/os_time.c	\
+RTOS/uC-OS3/Source/os_tmr.c	\
+RTOS/uC-OS3/Source/os_trace.c	\
+RTOS/uC-OS3/Source/os_var.c	\
+RTOS/uC-CPU/ARM-Cortex-M4/GNU/cpu_c.c	\
+RTOS/uC-CPU/cpu_core.c	\
+RTOS/uC-LIB/lib_ascii.c	\
+RTOS/uC-LIB/lib_math.c	\
+RTOS/uC-LIB/lib_mem.c	\
+RTOS/uC-LIB/lib_str.c	\
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32l475xx.s
-
+startup_stm32l475xx.s	\
+RTOS/uC-CPU/ARM-Cortex-M4/GNU/cpu_a.s	\
+RTOS/uC-OS3/Ports/ARM-Cortex-M/ARMv7-M/GNU/os_cpu_a.S
 
 #######################################
 # binaries
@@ -72,6 +98,8 @@ SZ = $(PREFIX)size
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
+# Generage .map
+NM = $(PREFIX)nm -n -S
  
 #######################################
 # CFLAGS
@@ -120,7 +148,13 @@ C_INCLUDES =  \
 -IDrivers/STM32L4xx_HAL_Driver/Inc \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
 -IDrivers/CMSIS/Include \
--IDrivers/CMSIS/Include
+-IDrivers/CMSIS/Include	\
+-IRTOS/uC-CPU/ARM-Cortex-M4/GNU	\
+-IRTOS/uC-CPU/ARM-Cortex-M4	\
+-IRTOS/uC-LIB	\
+-IRTOS/uC-OS3/Cfg/Template	\
+-IRTOS/uC-OS3/Ports/ARM-Cortex-M/ARMv7-M/GNU	\
+-IRTOS/uC-OS3/Source
 
 
 # compile gcc flags
@@ -149,7 +183,7 @@ LIBDIR =
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
+all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin map
 
 
 #######################################
@@ -182,11 +216,56 @@ $(BUILD_DIR):
 	mkdir $@		
 
 #######################################
+# Generate .map file
+#######################################
+map:
+	$(NM) $(BUILD_DIR)/$(TARGET).elf > $(BUILD_DIR)/System.map
+
+#######################################
 # clean up
 #######################################
-clean:
-	-rm -fR $(BUILD_DIR)
-  
+ifeq ($(OS), Windows_NT)
+	-del /Q /f $(BUILD_DIR)
+else
+	-rm -rf $(BUILD_DIR)/*
+endif
+
+#######################################
+# OpenOCD device and interface
+#######################################
+OO_TARGET=OpenOCD/target/stm32f4x.cfg
+OO_INTERFACE=OpenOCD/interface/stlink.cfg
+
+#######################################
+# download image
+
+# openocd -s search scripts or set
+# OPENOCD_SCRIPTS environmet variable
+#######################################
+dwn:
+	openocd	\
+		-c "tcl_port disabled"	\
+		-c "gdb_port 3333"	\
+		-c "telnet_port 4444"	\
+		-f "$(OO_TARGET)"	\
+		-f "$(OO_INTERFACE)"	\
+		-c "program $(BUILD_DIR)/$(TARGET).elf"	\
+		-c "reset"	\
+		-c "shutdown"
+
+#######################################
+# debug
+#######################################
+debug:
+	openocd	\
+		-c "tcl_port disabled"	\
+		-c "gdb_port 3333"	\
+		-c "telnet_port 4444"	\
+		-f "$(OO_TARGET)"	\
+		-f "$(OO_INTERFACE)"	\
+		-c "program $(BUILD_DIR)/$(TARGET).elf"	\
+		-c "init"	\
+		-c "halt" 
 #######################################
 # dependencies
 #######################################
