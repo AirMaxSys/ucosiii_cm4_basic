@@ -26,6 +26,7 @@
 #include "stdio.h"
 
 #include "pwm.h"
+#include "os.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -100,15 +101,22 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
-	const static char *str = "stm32 ll lib USART test!!!\r\n";
-	const uint16_t str_len = strlen(str) + 1;
+#if 0
+  const static char *str = "stm32 ll lib USART test!!!\r\n";
+  const uint16_t str_len = strlen(str) + 1;
 
+  // enable USART receive irq
+  LL_USART_EnableIT_RXNE(USART1);
 
-	// enable USART receive irq
-	LL_USART_EnableIT_RXNE(USART1);
+  uint16_t pwm_val = 0;
+  int16_t step = 0;
+#endif
 
-	uint16_t pwm_val = 0;
-	int16_t step = 0;
+  OSInit();
+
+  OSTaskCreate();
+
+  OSStart();
 
   /* USER CODE END 2 */
 
@@ -119,12 +127,16 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+#if 0
 	// uart_tx_datas(str, str_len);
-	pwm_set_value(pwm_val);
-	if (0 == pwm_val)	step = 2;
-	if (1000 <= pwm_val)	step = -2;
-	pwm_val += step;
-	LL_mDelay(3);
+    pwm_set_value(pwm_val);
+    if (0 == pwm_val)
+        step = 2;
+    if (1000 <= pwm_val)
+        step = -2;
+    pwm_val += step;
+    LL_mDelay(3);
+#endif
   }
   /* USER CODE END 3 */
 }
@@ -202,7 +214,7 @@ static void MX_TIM1_Init(void)
   /* USER CODE END TIM1_Init 1 */
   TIM_InitStruct.Prescaler = 799;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 999;
+  TIM_InitStruct.Autoreload = 1999;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
   TIM_InitStruct.RepetitionCounter = 0;
   LL_TIM_Init(TIM1, &TIM_InitStruct);
@@ -212,7 +224,7 @@ static void MX_TIM1_Init(void)
   TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM1;
   TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
   TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
-  TIM_OC_InitStruct.CompareValue = 0;
+  TIM_OC_InitStruct.CompareValue = 1000;
   TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_LOW;
   TIM_OC_InitStruct.OCNPolarity = LL_TIM_OCPOLARITY_HIGH;
   TIM_OC_InitStruct.OCIdleState = LL_TIM_OCIDLESTATE_HIGH;
@@ -348,24 +360,26 @@ static void MX_GPIO_Init(void)
 // LED blink periodic
 static void DBG_LED_Blink(GPIO_TypeDef *port, uint32_t pin, uint32_t delay_ms)
 {
-	LL_GPIO_ResetOutputPin(port, pin);
-	LL_mDelay(delay_ms);
-	LL_GPIO_SetOutputPin(port, pin);
-	LL_mDelay(delay_ms);
+    LL_GPIO_ResetOutputPin(port, pin);
+    LL_mDelay(delay_ms);
+    LL_GPIO_SetOutputPin(port, pin);
+    LL_mDelay(delay_ms);
 }
 
 // transmit data by usart1
 void uart_tx_datas(const void *buf, uint32_t length)
 {
-	const uint8_t *ptr = (uint8_t *)buf;
+    const uint8_t *ptr = (uint8_t *)buf;
 
-	for (uint32_t i = 0; i < length; ++i) {
-		LL_USART_TransmitData8(USART1, ptr[i]);
-		// wait data byte transmit ok
-		while(!LL_USART_IsActiveFlag_TXE(USART1));
-	}
-	// wait for last frame transmited done
-	while(!LL_USART_IsActiveFlag_TC(USART1));
+    for (uint32_t i = 0; i < length; ++i) {
+        LL_USART_TransmitData8(USART1, ptr[i]);
+        // wait data byte transmit ok
+        while (!LL_USART_IsActiveFlag_TXE(USART1))
+            ;
+    }
+    // wait for last frame transmited done
+    while (!LL_USART_IsActiveFlag_TC(USART1))
+        ;
 }
 /* USER CODE END 4 */
 

@@ -3,6 +3,9 @@
 	"C_Cpp.errorSquiggles": "Disabled",
 	"python.pythonPath": "D:\\Python\\Python37\\python.exe",
 	"files.associations": {
-		"pwm.h": "c"
-	}
+        "pwm.h": "c",
+        "os.h": "c",
+        "os_trace.h": "c",
+        "os_cpu.h": "c"
+    }
 }
