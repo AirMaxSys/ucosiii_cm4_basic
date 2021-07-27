@@ -28,6 +28,7 @@
 #include  <os.h>
 #include  "os_app_hooks.h"
 
+#include <stdio.h>
 
 /*
 ************************************************************************************************************************
@@ -122,10 +123,11 @@ void  App_OS_ClrAllHooks (void)
 * Note(s)    : none
 ************************************************************************************************************************
 */
-
 void  App_OS_IdleTaskHook (void)
 {
-
+    if (OSIdleTaskCtr % 1000 == 0) {
+        // printf("IDLE TASK HOOK\r\n");
+    }
 }
 
 /*
@@ -182,6 +184,7 @@ void  App_OS_StatTaskHook (void)
 void  App_OS_TaskCreateHook (OS_TCB  *p_tcb)
 {
     (void)p_tcb;
+    printf("Create hook - task name %s\r\n", p_tcb->NamePtr);
 }
 
 

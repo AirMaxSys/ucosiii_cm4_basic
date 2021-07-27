@@ -31,7 +31,8 @@
 #include "cpu.h"
 #include "os.h"
 #include "lib_mem.h"
-#include "app_cfg.h"
+
+#include "os_app_hooks.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,11 +47,11 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
-#define BSP_ENABLE_SYSTICK()    do { SysTick->CTRL &= ~0x00000003u;} while(0)
-#define BSP_DISABLE_SYSTICK()   do { SysTick->CTRL |= 0x00000003u;} while (0)
+#define BSP_ENABLE_SYSTICK()   do { SysTick->CTRL |= 0x00000003u;} while (0)
+#define BSP_DISABLE_SYSTICK()    do { SysTick->CTRL &= ~0x00000003u;} while(0)
 
-#define TASK1_STK_LEFT_SIZE    12u
-#define TASK1_STK_SIZE  128u
+#define TASK_STK_SIZE  128u
+#define TASK_STK_LEFT_SIZE    12u
 
 /* USER CODE END PM */
 
@@ -59,7 +60,9 @@
 /* USER CODE BEGIN PV */
 
 static  OS_TCB task1TCB;
-static  CPU_STK task1STK[TASK1_STK_SIZE];
+static  CPU_STK task1STK[TASK_STK_SIZE];
+static  OS_TCB task2TCB;
+static  CPU_STK task2STK[TASK_STK_SIZE];
 
 /* USER CODE END PV */
 
@@ -90,6 +93,16 @@ static void task_one(void *argc)
     }
 }
 
+static void task_two(void *argc)
+{
+    OS_ERR task_two_err;
+    (void)argc;
+
+    while (1) {
+        printf("CALL task two\r\n");
+        OSTimeDly(1000, OS_OPT_TIME_DLY, &task_two_err);
+    }
+}
 
 /* USER CODE END 0 */
 
@@ -131,7 +144,7 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
-#if 1
+#if 0
   const static char *str = "stm32 ll lib USART test!!!\r\n";
   const uint16_t str_len = strlen(str) + 1;
 
@@ -140,6 +153,8 @@ int main(void)
 
   uint16_t pwm_val = 0;
   int16_t step = 0;
+
+  printf("%s", str);
 #else
   OS_ERR os_err;
 
@@ -154,15 +169,30 @@ int main(void)
   CPU_Init();
 
   OSInit(&os_err);
-  if (os_err != OS_ERR_NONE)
-    while (1)
+  if (os_err != OS_ERR_NONE) {
+    printf("OS Init ERR %d\r\n", os_err);
+    while (1) {
         __NOP();
+    }
+  }
 
-  OSTaskCreate(&task1TCB, "task_one", task_one, NULL, 4, &task1STK[0], \
-            TASK1_STK_LEFT_SIZE, TASK1_STK_SIZE, 0, 0, NULL, (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), &os_err);
-  if (os_err != OS_ERR_NONE)
-      while (1)
-        __NOP();
+  // Enable hook functions
+  App_OS_SetAllHooks();
+
+  OSTaskCreate(&task1TCB, "task one", task_one, NULL, 4, &task1STK[0],  \
+                        TASK_STK_LEFT_SIZE, TASK_STK_SIZE, 0, 0, NULL,  \
+                        (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),    \
+                        &os_err);
+  if (os_err != OS_ERR_NONE) {
+    printf("TASK two Create ERR:%d\r\n", os_err);
+  }
+  OSTaskCreate(&task2TCB, "task two", task_two, NULL, 4, &task2STK[0],  \
+                        TASK_STK_LEFT_SIZE, TASK_STK_SIZE, 0, 0, NULL,  \
+                        (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),    \
+                        &os_err);
+  if (os_err != OS_ERR_NONE) {
+    printf("TASK two Create ERR:%d\r\n", os_err);
+  }
 
   OSStart(&os_err);
 #endif
@@ -176,7 +206,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-#if 1
+#if 0
 	// uart_tx_datas(str, str_len);
     pwm_set_value(pwm_val);
     if (0 == pwm_val)
