@@ -211,7 +211,7 @@ void USART1_IRQHandler(void)
 
 	if (usart1_rx_cnt == rx_usr_set_cnt || usart1_rx_cnt >= 1024) {
 		// call user define USART1 receive data function
-		__nop();
+		__NOP();
 		uart_tx_datas(usart_com_rx_buf, rx_usr_set_cnt);
 		usart1_rx_cnt = 0;
 	}

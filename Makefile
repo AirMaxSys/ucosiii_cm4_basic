@@ -71,7 +71,8 @@ RTOS/uC-CPU/cpu_core.c	\
 RTOS/uC-LIB/lib_ascii.c	\
 RTOS/uC-LIB/lib_math.c	\
 RTOS/uC-LIB/lib_mem.c	\
-RTOS/uC-LIB/lib_str.c
+RTOS/uC-LIB/lib_str.c	\
+Core/Src/pwm.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -237,22 +238,16 @@ endif
 #######################################
 # OpenOCD device and interface
 #######################################
-OO_TARGET=OpenOCD/target/stm32f4x.cfg
-OO_INTERFACE=OpenOCD/interface/stlink.cfg
-
+OO_TARGET=OpenOCD/st_nucleo_l4.cfg
 #######################################
 # download image
 
 # openocd -s search scripts or set
 # OPENOCD_SCRIPTS environmet variable
 #######################################
-dwn:
+load:
 	openocd	\
-		-c "tcl_port disabled"	\
-		-c "gdb_port 3333"	\
-		-c "telnet_port 4444"	\
 		-f "$(OO_TARGET)"	\
-		-f "$(OO_INTERFACE)"	\
 		-c "program $(BUILD_DIR)/$(TARGET).elf"	\
 		-c "reset"	\
 		-c "shutdown"
@@ -266,7 +261,6 @@ debug:
 		-c "gdb_port 3333"	\
 		-c "telnet_port 4444"	\
 		-f "$(OO_TARGET)"	\
-		-f "$(OO_INTERFACE)"	\
 		-c "program $(BUILD_DIR)/$(TARGET).elf"	\
 		-c "init"	\
 		-c "halt" 

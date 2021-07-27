@@ -22,11 +22,16 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "string.h"
-#include "stdio.h"
+#include <stdio.h>
+#include <string.h>
 
 #include "pwm.h"
+#include "print.h"
+
+#include "cpu.h"
 #include "os.h"
+#include "lib_mem.h"
+#include "app_cfg.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,11 +46,20 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
+#define BSP_ENABLE_SYSTICK()    do { SysTick->CTRL &= ~0x00000003u;} while(0)
+#define BSP_DISABLE_SYSTICK()   do { SysTick->CTRL |= 0x00000003u;} while (0)
+
+#define TASK1_STK_LEFT_SIZE    12u
+#define TASK1_STK_SIZE  128u
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+static  OS_TCB task1TCB;
+static  CPU_STK task1STK[TASK1_STK_SIZE];
 
 /* USER CODE END PV */
 
@@ -55,11 +69,27 @@ static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
-static void DBG_LED_Blink(GPIO_TypeDef *port, uint32_t pin, uint32_t delay_ms);
+static void BSP_OSTick_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+static void task_one(void *argc)
+{
+    OS_ERR task_one_err;
+    (void)argc;
+
+    BSP_ENABLE_SYSTICK();
+
+    while (1) {
+        LL_GPIO_SetOutputPin(LED_R_GPIO_Port, LED_R_Pin);    
+        OSTimeDlyHMSM(0, 0, 0, 500, OS_OPT_TIME_DLY, &task_one_err);
+        LL_GPIO_ResetOutputPin(LED_R_GPIO_Port, LED_R_Pin);    
+        OSTimeDlyHMSM(0, 0, 0, 500, OS_OPT_TIME_DLY, &task_one_err);
+    }
+}
+
 
 /* USER CODE END 0 */
 
@@ -101,7 +131,7 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
-#if 0
+#if 1
   const static char *str = "stm32 ll lib USART test!!!\r\n";
   const uint16_t str_len = strlen(str) + 1;
 
@@ -110,13 +140,32 @@ int main(void)
 
   uint16_t pwm_val = 0;
   int16_t step = 0;
+#else
+  OS_ERR os_err;
+
+  print_init();
+
+  printf("UART test\r\n");
+
+  BSP_OSTick_Init();
+
+  Mem_Init();
+  CPU_IntDis();
+  CPU_Init();
+
+  OSInit(&os_err);
+  if (os_err != OS_ERR_NONE)
+    while (1)
+        __NOP();
+
+  OSTaskCreate(&task1TCB, "task_one", task_one, NULL, 4, &task1STK[0], \
+            TASK1_STK_LEFT_SIZE, TASK1_STK_SIZE, 0, 0, NULL, (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), &os_err);
+  if (os_err != OS_ERR_NONE)
+      while (1)
+        __NOP();
+
+  OSStart(&os_err);
 #endif
-
-  OSInit();
-
-  OSTaskCreate();
-
-  OSStart();
 
   /* USER CODE END 2 */
 
@@ -127,7 +176,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-#if 0
+#if 1
 	// uart_tx_datas(str, str_len);
     pwm_set_value(pwm_val);
     if (0 == pwm_val)
@@ -357,21 +406,39 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+static void BSP_OSTick_Init(void)
+{
+    LL_RCC_ClocksTypeDef rcc_clk;
+    CPU_INT32U cpu_freq;
+
+    CPU_SR_ALLOC();
+    LL_RCC_GetSystemClocksFreq(&rcc_clk);
+    cpu_freq = rcc_clk.HCLK_Frequency;
+
+    CPU_CRITICAL_ENTER();
+    OS_CPU_SysTickInitFreq(cpu_freq);
+    // Disable System tick befor user task begin
+    BSP_DISABLE_SYSTICK();
+    CPU_CRITICAL_EXIT();
+}
+
+#if DBG_ON == 1
 // LED blink periodic
-static void DBG_LED_Blink(GPIO_TypeDef *port, uint32_t pin, uint32_t delay_ms)
+void DBG_LED_Blink(GPIO_TypeDef *port, uint32_t pin, uint32_t delay_ms)
 {
     LL_GPIO_ResetOutputPin(port, pin);
     LL_mDelay(delay_ms);
     LL_GPIO_SetOutputPin(port, pin);
     LL_mDelay(delay_ms);
 }
+#endif
 
-// transmit data by usart1
-void uart_tx_datas(const void *buf, uint32_t length)
+// USART1 transmit data
+void uart_tx_datas(const uint8_t *buf, uint16_t len)
 {
-    const uint8_t *ptr = (uint8_t *)buf;
+    const uint8_t *ptr = buf;
 
-    for (uint32_t i = 0; i < length; ++i) {
+    for (uint16_t i = 0; i < len; ++i) {
         LL_USART_TransmitData8(USART1, ptr[i]);
         // wait data byte transmit ok
         while (!LL_USART_IsActiveFlag_TXE(USART1))
@@ -381,6 +448,17 @@ void uart_tx_datas(const void *buf, uint32_t length)
     while (!LL_USART_IsActiveFlag_TC(USART1))
         ;
 }
+
+// USART1 receive data
+void uart_rx_datas(uint8_t *buf, uint16_t len)
+{
+    for (uint16_t i = 0; i < len; ++i) {
+        while (!LL_USART_IsActiveFlag_RXNE(USART1))
+            ;
+        buf[i] = LL_USART_ReceiveData8(USART1);
+    }
+}
+
 /* USER CODE END 4 */
 
 /**

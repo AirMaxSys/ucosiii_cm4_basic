@@ -1,7 +1,8 @@
-# keil
-/MDK-ARM/*
+# MDK-ARM keil
+MDK-ARM/*
 !*.s
 !*.uvprojx
 !*.uvoptx
 
-# python
+# GNU
+build/*
