@@ -47,8 +47,9 @@ Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_dma.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_usart.c \
 Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_rcc.c \
 Core/Src/system_stm32l4xx.c  \
+Utils/print.c	\
 RTOS/uC-OS3/Cfg/Template/os_app_hooks.c	\
-RTOS/uC-OS3/Ports/ARM-Cortex-M/ARMv7-M/GNU/os_cpu_c.c	\
+RTOS/uC-OS3/Ports/ARM-Cortex-M/ARMv7-M/os_cpu_c.c	\
 RTOS/uC-OS3/Source/os_cfg_app.c	\
 RTOS/uC-OS3/Source/os_core.c	\
 RTOS/uC-OS3/Source/os_dbg.c	\
@@ -64,20 +65,19 @@ RTOS/uC-OS3/Source/os_task.c	\
 RTOS/uC-OS3/Source/os_tick.c	\
 RTOS/uC-OS3/Source/os_time.c	\
 RTOS/uC-OS3/Source/os_tmr.c	\
-RTOS/uC-OS3/Source/os_trace.c	\
 RTOS/uC-OS3/Source/os_var.c	\
-RTOS/uC-CPU/ARM-Cortex-M4/GNU/cpu_c.c	\
+RTOS/uC-CPU/ARM-Cortex-M4/ARMv7-M/cpu_c.c	\
 RTOS/uC-CPU/cpu_core.c	\
 RTOS/uC-LIB/lib_ascii.c	\
 RTOS/uC-LIB/lib_math.c	\
 RTOS/uC-LIB/lib_mem.c	\
-RTOS/uC-LIB/lib_str.c	\
+RTOS/uC-LIB/lib_str.c
 
 # ASM sources
 ASM_SOURCES =  \
 startup_stm32l475xx.s	\
-RTOS/uC-CPU/ARM-Cortex-M4/GNU/cpu_a.s	\
-RTOS/uC-OS3/Ports/ARM-Cortex-M/ARMv7-M/GNU/os_cpu_a.S
+RTOS/uC-CPU/ARM-Cortex-M4/ARMv7-M/GNU/cpu_a.s	\
+RTOS/uC-OS3/Ports/ARM-Cortex-M/ARMv7-M/GNU/os_cpu_a.s
 
 #######################################
 # binaries
@@ -149,12 +149,15 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32L4xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/CMSIS/Include	\
--IRTOS/uC-CPU/ARM-Cortex-M4/GNU	\
--IRTOS/uC-CPU/ARM-Cortex-M4	\
+-IRTOS/uC-CPU	\
+-IRTOS/uC-CPU/ARM-Cortex-M4/ARMv7-M/GNU	\
+-IRTOS/uC-CPU/Cfg/Template	\
 -IRTOS/uC-LIB	\
+-IRTOS/uC-LIB/Cfg	\
 -IRTOS/uC-OS3/Cfg/Template	\
 -IRTOS/uC-OS3/Ports/ARM-Cortex-M/ARMv7-M/GNU	\
--IRTOS/uC-OS3/Source
+-IRTOS/uC-OS3/Source	\
+-IUtils
 
 
 # compile gcc flags
@@ -224,6 +227,7 @@ map:
 #######################################
 # clean up
 #######################################
+clean:
 ifeq ($(OS), Windows_NT)
 	-del /Q /f $(BUILD_DIR)
 else
